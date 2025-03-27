@@ -37,7 +37,7 @@ Ce projet vise à étudier la **corrélation entre la consommation d'alcool** et
    -  **Réseau de Neurones**  
    -  **Deep Learning**  
 
-⚠️ **Remarque importante :** Bien que ces méthodes offrent des capacités prédictives avancées, elles ne se sont pas révélées beaucoup plus efficaces en raison de la **petite taille de l'échantillon**. 
+⚠️ **Remarque importante :** Bien que ces méthodes offrent des capacités prédictives avancées, elles ne se sont pas révélées beaucoup plus efficaces en raison de la petite taille de l'échantillon. 
 ---
 
 ## Analyse des Résultats Graphiques  

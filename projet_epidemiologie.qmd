@@ -1,0 +1,664 @@
+---
+title: "projet_epidemiologie"
+format: html
+---
+
+# Problématique et jeu de données
+
+## **Problématique :**
+
+-   Voir la corrélation entre la consommation d'alcool et les notes en maths chez des élèves de 15 à 22 ans
+
+-   Prédire la note finale en mathématiques à partir de la consommation d'alcool de l'élève
+
+## Jeu de données :
+
+**Source :** [https://www.kaggle.com/datasets/uciml/student-alcohol-consumption?](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption?resource=download)
+
+**Context :**
+
+The data were obtained in a survey of students math and portuguese language courses in secondary school. It contains a lot of interesting social, gender and study information about students. You can use it for some EDA or try to predict students final grade.
+
+**Content :**
+
+Attributes for student-mat.csv (Math course) dataset: 
+
+1.  school - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
+
+2.  sex - student's sex (binary: 'F' - female or 'M' - male) 
+
+3.  age - student's age (numeric: from 15 to 22) 
+
+4.  address - student's home address type (binary: 'U' - urban or 'R' - rural) 
+
+5.  famsize - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3) 
+
+6.  Pstatus - parent's cohabitation status (binary: 'T' - living together or 'A' - apart)
+
+7.  Medu - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
+
+8.  Fedu - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
+
+9.  Mjob - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') 
+
+10. Fjob - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') 
+
+11. reason - reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other') 
+
+12. guardian - student's guardian (nominal: 'mother', 'father' or 'other') 
+
+13. traveltime - home to school travel time (numeric: 1 - \<15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - \>1 hour) 
+
+14. studytime - weekly study time (numeric: 1 - \<2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - \>10 hours) 
+
+15. failures - number of past class failures (numeric: n if 1\<=n\<3, else 4) 
+
+16. schoolsup - extra educational support (binary: yes or no) 
+
+17. famsup - family educational support (binary: yes or no) 
+
+18. paid - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no) 
+
+19. activities - extra-curricular activities (binary: yes or no) 
+
+20. nursery - attended nursery school (binary: yes or no) 
+
+21. higher - wants to take higher education (binary: yes or no) 
+
+22. internet - Internet access at home (binary: yes or no) 
+
+23. romantic - with a romantic relationship (binary: yes or no) 
+
+24. famrel - quality of family relationships (numeric: from 1 - very bad to 5 - excellent) 
+
+25. freetime - free time after school (numeric: from 1 - very low to 5 - very high) 
+
+26. goout - going out with friends (numeric: from 1 - very low to 5 - very high) 
+
+27. Dalc - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) 
+
+28. Walc - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) 
+
+29. health - current health status (numeric: from 1 - very bad to 5 - very good) 
+
+30. absences - number of school absences (numeric: from 0 to 93) 
+
+31. G1 - first period grade (numeric: from 0 to 20) 
+
+32. G2 - second period grade (numeric: from 0 to 20) 
+
+33. G3 - final grade (numeric: from 0 to 20, output target)
+
+# Qualification du jeu de données
+
+```{r}
+library(readr)
+
+studentm <- read_csv("student-mat.csv")
+```
+
+```{r}
+library(dplyr)
+
+studentm <- mutate(studentm, across(where(is.character), as.factor))
+head(studentm)
+```
+
+```{r}
+colSums(is.na(studentm))
+```
+
+# Statistiques descriptives
+
+```{r}
+stats <- summarise(studentm,
+    Mean_age = mean(age), Median_age = median(age), SD_age = sd(age),
+    Mean_G3 = mean(G3), Median_G3 = median(G3), SD_G3 = sd(G3),
+    Mean_Dalc = mean(Dalc), Median_Dalc = median(Dalc), SD_Dalc = sd(Dalc),
+    Mean_Walc = mean(Walc), Median_Walc = median(Walc), SD_Walc = sd(Walc)
+  )
+print(stats)
+```
+
+```{r}
+library(ggplot2)
+
+# Histogramme des notes du premier semestre (G1)
+ggplot(studentm, aes(x=G1)) +
+  geom_histogram(binwidth=1, fill="blue", alpha=0.7, color="black") +
+  ggtitle("Distribution des notes du premier semestre (G1)") +
+  xlab("Note du premier semestre") +
+  ylab("Fréquence") +
+  theme_minimal()
+
+# Histogramme des notes du second semestre (G2)
+ggplot(studentm, aes(x=G2)) +
+  geom_histogram(binwidth=1, fill="blue", alpha=0.7, color="black") +
+  ggtitle("Distribution des notes du second semestre (G2)") +
+  xlab("Note du second semestre") +
+  ylab("Fréquence") +
+  theme_minimal()
+
+# Histogramme des notes finales (G3)
+ggplot(studentm, aes(x=G3)) +
+  geom_histogram(binwidth=1, fill="blue", alpha=0.7, color="black") +
+  ggtitle("Distribution des notes finales (G3)") +
+  xlab("Note finale") +
+  ylab("Fréquence") +
+  theme_minimal()
+```
+
+```{r}
+library(tidyr)
+
+# Histogramme de la consommation d'alcool en semaine (Dalc) et le week-end (Walc)
+studentm_long <- studentm %>%
+  select(Dalc, Walc) %>%
+  pivot_longer(cols = c(Dalc, Walc), names_to = "Période", values_to = "Consommation")
+
+studentm_long$Période <- recode(studentm_long$Période, "Dalc" = "Semaine", "Walc" = "Week-end")
+
+ggplot(studentm_long, aes(x = factor(Consommation), fill = Période)) +
+  geom_bar(position = "dodge", alpha = 0.7) +
+  ggtitle("Consommation d'alcool en semaine et le week-end") +
+  xlab("Niveau de consommation") +
+  ylab("Nombre d'étudiants") +
+  scale_x_discrete(labels = c("1" = "Très faible", "2" = "Faible", "3" = "Moyenne", "4" = "Haute", "5" = "Très haute")) +
+  scale_fill_manual(name = "Période", values = c("Semaine" = "red", "Week-end" = "purple")) +
+  theme_minimal()
+```
+
+```{r}
+# Histogramme du nombre d'étudiants par âge
+ggplot(studentm, aes(x = age)) +
+  geom_bar(stat = "count", fill = "skyblue", alpha = 0.7) +  # Utiliser 'stat = count' pour compter les occurrences d'âge
+  ggtitle("Répartition des étudiants par âge") +
+  xlab("Âge") +
+  ylab("Nombre d'étudiants") +
+  theme_minimal()
+```
+
+```{r}
+# Créer un histogramme des notes en fonction de la consommation d'alcool en semaine
+ggplot(studentm, aes(x = G3, fill = factor(Dalc))) + 
+  geom_histogram(binwidth = 1, alpha = 0.6, position = "dodge") + 
+  labs(title = "Distribution des notes finales en fonction de la consommation d'alcool en semaine",
+       x = "Note finale (G3)", 
+       y = "Fréquence", 
+       fill = "Consommation en semaine") +
+  scale_fill_manual(
+    values = c("red", "purple", "blue", "green", "yellow"),
+    labels = c("Très faible", "Faible", "Moyenne", "Haute", "Très haute")
+  ) +
+  theme_minimal()
+
+# Créer un histogramme des notes en fonction de la consommation d'alcool le week-end
+ggplot(studentm, aes(x = G3, fill = factor(Walc))) + 
+  geom_histogram(binwidth = 1, alpha = 0.6, position = "dodge") + 
+  labs(title = "Distribution des notes finales en fonction de la consommation d'alcool le week-end",
+       x = "Note finale (G3)", 
+       y = "Fréquence", 
+       fill = "Consommation le week-end") +
+  scale_fill_manual(
+    values = c("red", "purple", "blue", "green", "yellow"),
+    labels = c("Très faible", "Faible", "Moyenne", "Haute", "Très haute")
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Transformer les données en format long, en incluant la variable G3
+studentm_long <- studentm %>% 
+  pivot_longer(cols = c(Dalc, Walc), names_to = "Période", values_to = "Consommation") %>%
+  select(G3, Période, Consommation)
+
+# Renommer les catégories pour l'affichage
+studentm_long$Période <- recode(studentm_long$Période, "Dalc" = "Semaine", "Walc" = "Week-end")
+
+# Créer un boxplot combiné
+ggplot(studentm_long, aes(x = factor(Consommation), y = G3, fill = Période)) + 
+  geom_boxplot(alpha = 0.6) + 
+  stat_summary(fun = "mean", geom = "point", shape = 18, size = 3, 
+               position = position_dodge(width = 0.75), color = "red") + 
+  labs(title = "Notes finales en fonction de la consommation d'alcool",
+       x = "Niveau de consommation d'alcool",
+       y = "Note finale (G3)",
+       fill = "Période") + 
+  scale_x_discrete(labels = c("1" = "Très faible", "2" = "Faible", "3" = "Moyenne", "4" = "Haute", "5" = "Très haute")) + 
+  scale_fill_manual(values = c("Semaine" = "red", "Week-end" = "purple")) + 
+  theme_minimal()
+```
+
+## AFCM
+
+```{r}
+library(tidyverse)
+library(FactoMineR)
+library(explor)
+
+# Transformer les variables numériques en facteurs pour l'AFCM
+data_selected <- studentm %>%
+  mutate(
+    goout = as.factor(goout),
+    Dalc = as.factor(Dalc),
+    Walc = as.factor(Walc),
+    absences = cut(absences, breaks = c(-1, 9, 10, 20, 50, 100), labels = c("0-5", "6-10", "11-20", "21-50", "51+")),
+    G3 = cut(G3, breaks = c(-1, 5, 10, 15, 20), labels = c("0-5", "6-10", "11-15", "16-20"))
+  )
+
+data_acm <- data_selected %>% select(goout, Dalc, Walc, absences, G3)
+
+# Appliquer l'AFCM
+res_acm <- MCA(data_acm, graph = FALSE)
+
+explor(res_acm)
+```
+
+## Régression linéaire
+
+```{r}
+model <- lm(G3 ~ Dalc + Walc + absences + goout, data = studentm)
+
+# Afficher le résumé du modèle (p-values incluses)
+summary(model)
+```
+
+```{r}
+# Visualiser les relations avec des graphiques
+ggplot(studentm, aes(x = Dalc, y = G3)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "red") +
+  ggtitle("Note finale en fonction de la consommation d'alcool hebdomadaire") +
+  theme_minimal()
+
+ggplot(studentm, aes(x = Walc, y = G3)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "blue") +
+  ggtitle("Note finale en fonction de la consommation d'alcool le week-end") +
+  theme_minimal()
+
+ggplot(studentm, aes(x = absences, y = G3)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "green") +
+  ggtitle("Note finale en fonction du nombre d'absences") +
+  theme_minimal()
+
+ggplot(studentm, aes(x = goout, y = G3)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "purple") +
+  ggtitle("Note finale en fonction de la fréquence de sortie") +
+  theme_minimal()
+```
+
+# Approche non supervisée
+
+## K-means
+
+```{r}
+library(cluster)
+
+# Normalisation des données
+df_scaled <- scale(studentm[, c("goout","Dalc", "Walc", "absences", "G3")])
+
+# Déterminer le nombre optimal de clusters avec la méthode du coude
+wss <- (nrow(df_scaled)-1)*sum(apply(df_scaled, 2, var))
+for (i in 2:10) {
+  wss[i] <- sum(kmeans(df_scaled, centers=i, nstart=25)$tot.withinss)
+}
+plot(1:10, wss, type="b", pch=19, frame=FALSE,
+     xlab="Nombre de clusters K",
+     ylab="Somme des carrés intra-clusters")
+
+# Appliquer K-means
+set.seed(123)
+kmeans_result <- kmeans(df_scaled, centers=2, nstart=25)
+
+studentm$kmeans_cluster <- as.factor(kmeans_result$cluster)
+
+ggplot(studentm, aes(x=Walc, y=G3, color=kmeans_cluster)) +
+  geom_point(size=3) +
+  labs(title="K-means Clustering : Consommation d'alcool et résultats",
+       x="Consommation d'alcool le week-end",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=Dalc, y=G3, color=kmeans_cluster)) +
+  geom_point(size=3) +
+  labs(title="K-means Clustering : Consommation d'alcool et résultats",
+       x="Consommation d'alcool en semaine",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=goout, y=G3, color=kmeans_cluster)) +
+  geom_point(size=3) +
+  labs(title="K-means Clustering : Fréquence de sortie et résultats",
+       x="Fréquence de sortie",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=absences, y=G3, color=kmeans_cluster)) +
+  geom_point(size=3) +
+  labs(title="K-means Clustering : Nombre d'absences et résultats",
+       x="Nombre d'absences",
+       y="Résultat final (G3)") +
+  theme_minimal()
+```
+
+## Clusters hiérarchiques
+
+```{r}
+# Calculer la matrice de distance
+dist_matrix <- dist(df_scaled, method = "euclidean")
+
+# Appliquer le clustering hiérarchique avec la méthode Ward
+hc <- hclust(dist_matrix, method = "ward.D2")
+
+plot(hc, main="Dendrogramme du clustering hiérarchique", sub="", xlab="", cex=0.7)
+
+# Découper en 4 clusters (d'après le dendrogramme)
+studentm$hc_cluster <- cutree(hc, k=3)
+studentm$hc_cluster <- as.factor(studentm$hc_cluster)
+
+ggplot(studentm, aes(x=Walc, y=G3, color=hc_cluster)) +
+  geom_point(size=3) +
+  labs(title="Clustering hiérarchique : Consommation d'alcool et résultats",
+       x="Consommation d'alcool le week-end",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=Dalc, y=G3, color=hc_cluster)) +
+  geom_point(size=3) +
+  labs(title="Clustering hiérarchique : Consommation d'alcool et résultats",
+       x="Consommation d'alcool en semaine",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=goout, y=G3, color=hc_cluster)) +
+  geom_point(size=3) +
+  labs(title="Clustering hiérarchique : Fréquence de sortie et résultats",
+       x="Fréquence de sortie",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=absences, y=G3, color=hc_cluster)) +
+  geom_point(size=3) +
+  labs(title="Clustering hiérarchique : Nombre d'absences et résultats",
+       x="Nombre d'absences",
+       y="Résultat final (G3)") +
+  theme_minimal()
+```
+
+## GMM
+
+```{r}
+library(mclust)
+
+# Appliquer le modèle GMM
+gmm_model <- Mclust(df_scaled)
+
+studentm$gmm_cluster <- as.factor(gmm_model$classification)
+
+ggplot(studentm, aes(x=Walc, y=G3, color=gmm_cluster)) +
+  geom_point(size=3) +
+  labs(title="GMM Clustering : Consommation d'alcool et résultats",
+       x="Consommation d'alcool le week-end",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=Dalc, y=G3, color=gmm_cluster)) +
+  geom_point(size=3) +
+  labs(title="GMM Clustering : Consommation d'alcool et résultats",
+       x="Consommation d'alcool en semaine",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=goout, y=G3, color=gmm_cluster)) +
+  geom_point(size=3) +
+  labs(title="GMM Clustering : Fréquence de sortie et résultats",
+       x="Fréquence de sortie",
+       y="Résultat final (G3)") +
+  theme_minimal()
+
+ggplot(studentm, aes(x=absences, y=G3, color=gmm_cluster)) +
+  geom_point(size=3) +
+  labs(title="GMM Clustering : Nombre d'absences et résultats",
+       x="Nombre d'absences",
+       y="Résultat final (G3)") +
+  theme_minimal()
+```
+
+```{r}
+studentm$kmeans_cluster <- as.numeric(as.character(studentm$kmeans_cluster))
+studentm$hc_cluster <- as.numeric(as.character(studentm$hc_cluster))
+studentm$gmm_cluster <- as.numeric(as.character(studentm$gmm_cluster))
+```
+
+```{r}
+# Calcul des silhouette scores
+silhouette_scores <- data.frame(
+  Model = c("K-Means", "Hierarchical clustering", "GMM"),
+  Silhouette = c(
+     mean(silhouette(as.integer(studentm$kmeans_cluster), dist(df_scaled))[, 3]),
+    mean(silhouette(as.integer(studentm$hc_cluster), dist(df_scaled))[, 3]),
+    mean(silhouette(as.integer(studentm$gmm_cluster), dist(df_scaled))[, 3])
+  )
+)
+print(silhouette_scores)
+```
+
+```{r}
+library(fpc)
+library(aricode)
+
+# Fonction pour calculer les métriques d'évaluation du clustering
+compute_clustering_metrics <- function(data, clustering, true_labels) {
+  dist_matrix <- dist(data)
+  
+  # Calcul du silhouette score
+  sil_score <- mean(silhouette(clustering, dist_matrix)[, 3])
+  
+  # Calcul des indices Dunn et Calinski-Harabasz
+  stats <- cluster.stats(dist_matrix, clustering)
+  dunn_index <- stats$dunn
+  calinski_index <- stats$ch
+  
+  # Calcul de l'Adjusted Rand Index (ARI) et du Normalized Mutual Information (NMI)
+  ari_score <- adjustedRandIndex(studentm$G3, clustering)
+  nmi_score <- NMI(studentm$G3, clustering)
+
+  return(c(sil_score, dunn_index, calinski_index, ari_score, nmi_score))
+}
+
+# Calcul des métriques de clustering pour chaque modèle
+metrics_results <- data.frame(
+  Model = c("K-Means", "Hierarchical clustering", "GMM"),
+  t(sapply(list(
+    studentm$kmeans_cluster,
+    studentm$hc_cluster,
+    studentm$gmm_cluster
+  ), function(clust) compute_clustering_metrics(df_scaled, as.numeric(clust), true_labels)))
+)
+
+# Nommer les colonnes correctement
+colnames(metrics_results) <- c("Model", "Silhouette", "Dunn Index", "Calinski-Harabasz", "ARI","NMI")
+
+# Affichage des résultats
+print(metrics_results)
+```
+
+```{r}
+metrics_long <- pivot_longer(metrics_results, cols = -Model, names_to = "Metric", values_to = "Score")
+
+ggplot(metrics_long, aes(x = Model, y = Score, fill = Model)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Metric, scales = "free") +
+  labs(title = "Comparaison des méthodes de clustering selon plusieurs métriques",
+       x = "Méthode de clustering", y = "Score") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+# Approche supervisée
+
+```{r}
+library(caret)
+library(randomForest)
+
+# Diviser les données en ensemble d'entraînement (70%) et de test (30%)
+set.seed(123) 
+index <- createDataPartition(studentm$G3, p=0.7, list=FALSE)
+train_data <- studentm[index, ]
+test_data <- studentm[-index, ]
+```
+
+## Random Forest
+
+```{r}
+set.seed(123)
+model_rf <- randomForest(G3 ~ Dalc + Walc, data=train_data, ntree=100)
+
+predictions_rf <- predict(model_rf, test_data)
+
+importance(model_rf)
+
+ggplot(data.frame(Actual = test_data$G3, Predicted = predictions_rf), aes(x=Actual, y=Predicted)) +
+  geom_point(color="blue") +
+  geom_abline(slope=1, intercept=0, color="red", linetype="dashed") +
+  labs(title="Prédictions Random Forest vs Réel",
+       x="Note Finale Réelle (G3)",
+       y="Prédiction")
+```
+
+## Réseau de neurones simple
+
+```{r}
+library(nnet)
+
+# Séparation des données en training (70%) et test (30%)
+set.seed(18)
+df_sampling_index <- createDataPartition(studentm$G3, times = 1, p = 0.7, list = FALSE)
+df_training <- studentm[df_sampling_index, ]
+df_testing <- studentm[-df_sampling_index, ]
+
+# Entraînement du réseau de neurones
+set.seed(18)
+nn_model <- nnet(G3 ~ Dalc + Walc, 
+                 data = df_training, 
+                 size = 5,  # Nombre de neurones cachés
+                 linout = TRUE, 
+                 maxit = 500)
+
+predictions_nn <- predict(nn_model, df_testing)
+
+ggplot(data.frame(Actual = df_testing$G3, Predicted = predictions_nn), aes(x=Actual, y=Predicted)) +
+  geom_point(color="blue") +
+  geom_abline(slope=1, intercept=0, color="red", linetype="dashed") +
+  labs(title="Prédictions du Réseau de Neurones vs Valeurs Réelles",
+       x="Valeurs Réelles (G3)",
+       y="Prédictions (G3)") +
+  theme_minimal()
+
+```
+
+## Deep Learning (4 couches)
+
+```{r}
+install.packages("torch")
+library(torch)
+
+normalize <- function(x) { (x - min(x)) / (max(x) - min(x)) }
+
+df_training_norm <- df_training %>%
+  mutate(Dalc = normalize(Dalc), Walc = normalize(Walc), G3 = normalize(G3))
+
+df_testing_norm <- df_testing %>%
+  mutate(Dalc = normalize(Dalc), Walc = normalize(Walc), G3 = normalize(G3))
+
+x_train <- torch_tensor(as.matrix(df_training_norm[, c("Dalc", "Walc")]), dtype = torch_float())
+y_train <- torch_tensor(as.matrix(df_training_norm$G3), dtype = torch_float())
+
+x_test <- torch_tensor(as.matrix(df_testing_norm[, c("Dalc", "Walc")]), dtype = torch_float())
+y_test <- torch_tensor(as.matrix(df_testing_norm$G3), dtype = torch_float())
+
+model <- nn_module(
+  initialize = function() {
+    self$fc1 <- nn_linear(2, 64)
+    self$fc2 <- nn_linear(64, 32)
+    self$fc3 <- nn_linear(32, 16)
+    self$fc4 <- nn_linear(16, 1)
+  },
+  
+  forward = function(x) {
+    x %>% self$fc1() %>% nnf_relu() %>%
+        self$fc2() %>% nnf_relu() %>%
+        self$fc3() %>% nnf_relu() %>%
+        self$fc4()
+  }
+)
+
+net <- model()
+optimizer <- optim_adam(net$parameters, lr = 0.01)
+loss_fn <- nnf_mse_loss
+epochs <- 100
+
+for (epoch in 1:epochs) {
+  y_pred <- net(x_train)
+  loss <- loss_fn(y_pred, y_train)
+  optimizer$zero_grad()
+  loss$backward()
+  optimizer$step()
+  
+  if (epoch %% 10 == 0) {
+    cat("Epoch :", epoch, " - Loss :", loss$item(), "\n")
+  }
+}
+
+predictions_dl <- net(x_test)
+predictions_dl <- as.numeric(predictions_dl)
+
+library(ggplot2)
+ggplot(data.frame(Actual = as.numeric(y_test), Predicted = predictions_dl), aes(x=Actual, y=Predicted)) +
+  geom_point(color="blue") +
+  geom_abline(slope=1, intercept=0, color="red", linetype="dashed") +
+  labs(title="Deep Learning (Torch) : Prédictions vs Réalité",
+       x="Valeurs Réelles (G3)",
+       y="Prédictions (G3)") +
+  theme_minimal()
+
+
+predictions_train <- predict(nn_model, df_training)
+
+```
+
+## Comparaison des méthodes
+
+```{r}
+#Calcul des rmse
+
+rmse_lm <- sqrt(mean((predictions_lm - test_data$G3)^2))
+cat("RMSE Régression Linéaire :", rmse_lm, "\n")
+
+rmse_rf <- sqrt(mean((predictions_rf - test_data$G3)^2))
+cat("RMSE Random Forest :", rmse_rf, "\n")
+
+rmse_nn <- sqrt(mean((predictions_nn - df_testing$G3)^2))
+cat("RMSE Réseau de Neurones :", rmse_nn, "\n")
+
+rmse_dl <- sqrt(mean((predictions_dl - as.numeric(y_test))^2))
+rmse_dl_original <- rmse_dl * 20  # Remettre à l'échelle originale (0-20)
+cat("RMSE Deep Learning (Échelle Originale) :", rmse_dl_original, "\n")
+
+rmse_comparison <- data.frame(
+  Modèle = c("Régression Linéaire", "Random Forest", "Réseau de Neurones (nnet)", "Deep Learning (Torch)"),
+  RMSE = c(rmse_lm, rmse_rf, rmse_nn, rmse_dl_original)
+)
+
+print(rmse_comparison)
+
+library(ggplot2)
+ggplot(rmse_comparison, aes(x = Modèle, y = RMSE, fill = Modèle)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ggtitle("Comparaison des modèles (RMSE Échelle Originale)") +
+  theme_minimal() +
+  coord_flip()
+```

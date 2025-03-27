@@ -35,10 +35,9 @@ Ce projet vise à étudier la **corrélation entre la consommation d'alcool** et
 - Pour améliorer les prédictions des notes finales (G3), plusieurs modèles ont été testés :  
    -  **Random Forest**  
    -  **Réseau de Neurones**  
-   -  **Deep Learning**  
-
-⚠️ **Remarque importante :** Bien que ces méthodes offrent des capacités prédictives avancées, elles ne se sont pas révélées beaucoup plus efficaces en raison de la petite taille de l'échantillon. 
----
+   -  **Deep Learning**
+     
+⚠️ Remarque importante : Bien que ces méthodes offrent des capacités prédictives avancées, elles ne se sont pas révélées beaucoup plus efficaces en raison de la petite taille de l'échantillon. 
 
 ## Analyse des Résultats Graphiques  
 
